@@ -1,0 +1,38 @@
+.secipay-address-container {
+    display: flex;
+    border: 1px solid #2222224a;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+#qrcode {
+    display: inline-block;
+    padding: 20px;
+}
+.sp-qrcode-container {
+    text-align: center;
+}
+input#secipay-address {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+}
+.sp-address-container {
+    width: 75%;
+    padding: 20px;
+    text-align: center;
+}
+.secipay-address-container {
+    border: 1px solid #2222224a;
+}
+p.sp-cost, p.sp-order-status {
+    font-size: 20px;
+}
+
+@media screen and (max-width: 768px) {
+	.sp-address-container {
+		width: 100%;
+	}
+	.secipay-address-container {
+		flex-direction: column;
+	}
+}

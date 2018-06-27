@@ -1,0 +1,17 @@
+.tablewrapper {
+    padding: 10px 20px 0px 0px;
+}
+
+
+.cs-label {
+    display: block;
+    font-size: 12px;
+    padding: 5px 0px 0px 5px;
+}
+
+.cs-offline-wallet{
+	min-width: 300px;
+}
+.cs-max-amount{
+	max-width: 100px;
+}
