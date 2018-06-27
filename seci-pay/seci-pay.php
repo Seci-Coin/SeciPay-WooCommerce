@@ -167,48 +167,6 @@ class SeciPayWooGateway{
      * @param array $query_vars - Query vars from WC_Order_Query.
      * @return array modified $query
      */
-
-    public function customizing_checkout_button(){
-        $default_text  = __( 'Place order', 'woocommerce' );
-        $generate_address  = __( 'Generate Address', 'woocommerce' );
-    ?>
-    <script>
-      jQuery(document).ready(function($){
-            // 1. Initialising once loaded
-            console.log($('input[name^="payment_method"]:checked').val());
-            if($('input[name^="payment_method"]:checked').val() == 'secipay_gateway' ){
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').val('Generate Address');
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').attr('data-value','Generate Address');
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').text('Generate Address');
-            }else{
-                //$('input[name^="woocommerce_checkout_place_order"]').val('<?php echo $default_text; ?>');
-            }
-            // Checkout form change payment method
-            $( 'form.checkout' ).on( 'change', 'input[name^="payment_method"]', function() {
-
-                var choosenPaymentMethod = $('input[name^="payment_method"]:checked').val(); // Chosen
-                console.log('changes: ' + choosenPaymentMethod )
-                if( choosenPaymentMethod == 'secipay_gateway'){
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').val('Generate Address');
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').attr('data-value','Generate Address');
-                    jQuery('button[name^="woocommerce_checkout_place_order"]').text('Generate Address');
-                }else{ 
-                   // jQuery('button[name^="woocommerce_checkout_place_order"]').val('<?php echo $default_text; ?>');
-                }
-            });
-
-
-        });
-    </script>
-    <?php
-    }
-
-    /**
-     * Handle a custom 'seci_address' query var to get orders with the 'seci_address' meta.
-     * @param array $query - Args for WP_Query.
-     * @param array $query_vars - Query vars from WC_Order_Query.
-     * @return array modified $query
-     */
     public function cron_activation() {
         write_log("Plugin activating.");
         if ( ! wp_get_schedule( 'sp_cron_check_tx_confirmations' ) ) {
