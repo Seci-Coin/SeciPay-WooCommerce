@@ -1,1 +1,3 @@
-SeciPay WooCommerce
+# SeciPay WooCommerce
+
+## THIS IS A BETA AND IS NOT A FULL RELEASE. USE AT OWN RISK. TESTING IN PROGRESS
