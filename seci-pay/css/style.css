@@ -11,6 +11,23 @@
 .sp-qrcode-container {
     text-align: center;
 }
+#secipay-currency {
+    display: inline-flex;
+}
+
+.secipay-currency {
+    padding: 20px;
+    text-align: center;
+
+}
+
+.secipay-currency label {
+     font-size:14px;
+}
+
+.secipay-currency input[type="radio"] {
+    margin:0px;
+}
 input#secipay-address {
     width: 100%;
     text-align: center;
@@ -27,6 +44,48 @@ input#secipay-address {
 p.sp-cost, p.sp-order-status {
     font-size: 20px;
 }
+
+/* Animations */
+
+.pulse {
+  background-color: transparent;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  padding: 6px 10px;
+} 
+
+.pulse.waiting {
+  animation-name: waiting;
+}
+
+.pulse.confirmed {
+  animation-name: confirmed;
+}
+
+@keyframes waiting {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #ffb150;
+  }
+  100 {
+    background-color: transparent;
+  }
+}
+
+@keyframes confirmed {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #88ff88;
+  }
+  100 {
+    background-color: transparent;
+  }
+}
+
 
 @media screen and (max-width: 768px) {
 	.sp-address-container {

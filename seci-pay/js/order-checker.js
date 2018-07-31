@@ -9,8 +9,12 @@ jQuery(document).ready(function( $ ) {
 	jQuery.post(sp_data.ajax_url, data, function(response) {
 		console.log(response);
 		if (response == 'confirmed'){
-			 $('.sp-order-status').empty();
-            $('.sp-order-status').text('Payment Received. Order Confirmed');
+			$('.pulse').removeClass( "waiting" ).addClass( "confirmed" );
+            $('.pulse').empty();
+            $('.pulse').text('Transaction Confirmed!');
+            $('.entry-title, .fl-post-title').empty();
+            $('.entry-title, .fl-post-title').text('Transaction Confirmed!');
+			
 		} 
 	});
 		}, 3000);

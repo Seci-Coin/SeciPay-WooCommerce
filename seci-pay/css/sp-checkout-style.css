@@ -1,0 +1,21 @@
+#secipay-currency {
+    display: inline-flex;
+}
+
+.secipay-currency {
+    padding: 20px;
+    text-align: center;
+
+}
+
+.secipay-currency label {
+     font-size:14px;
+}
+
+.secipay-currency input[type="radio"] {
+    margin:0px;
+}
+
+.secipay-currency label img {
+    width: 40px;
+}
