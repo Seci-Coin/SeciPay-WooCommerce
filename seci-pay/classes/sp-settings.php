@@ -14,6 +14,7 @@ class SeciPaySettings{
 	public function sp_add_admin_menu(  ) { 
 
 		add_menu_page( 'SeciPay', 'SeciPay', 'manage_options', 'woocommerce_secipay_gateway',  array( $this,'sp_options_page' ),  plugin_dir_url( __FILE__ ) . '../images/icon.png');
+		//add_submenu_page('woocommerce_secipay_gateway', 'Coins', 'Coins', 'manage_options','edit.php?post_type=secipaycoin');
 
 	}
 
@@ -28,40 +29,12 @@ class SeciPaySettings{
 			'pluginPage'
 		);
 		add_settings_section(
-			'sp_pluginPage_section_coldstorage', 
-			__( 'Cold Storage', 'wc-gateway-secipay' ), 
-			array( $this,'sp_settings_section_coldstorage_callback'), 
-			'pluginPage'
-		);
-    	add_settings_field( 
-		'sp_cold_storage_enabled', 
-		__( 'Enable Cold Storage?', 'wc-gateway-secipay' ), 
-		'sp_cold_storage_enabled_render', 
-		'pluginPage', 
-		'sp_pluginPage_section_coldstorage' 
-		);
-
-		add_settings_field( 
-			'sp_cold_storage_address', 
-			__( 'Wallet Address', 'wc-gateway-secipay' ), 
-			'sp_cold_storage_address_render', 
-			'pluginPage', 
-			'sp_pluginPage_section_coldstorage' 
-		);
-
-		add_settings_field( 
-			'sp_cold_storage_max_amount', 
-			__( 'Amount Threshold', 'wc-gateway-secipay' ), 
-			'sp_cold_storage_max_amount_render', 
-			'pluginPage', 
-			'sp_pluginPage_section_coldstorage'
-		); 
-		add_settings_section(
 			'sp_pluginPage_section_transactions', 
-			__( 'Transactions', 'wc-gateway-secipay' ), 
+			__( 'General', 'wc-gateway-secipay' ), 
 			array( $this,'sp_settings_section_transactions_callback'), 
 			'pluginPage'
 		);
+
 
 		/*add_settings_field( 
 			'sp_text_field_0', 
@@ -73,42 +46,6 @@ class SeciPaySettings{
 
 */
 
-function sp_cold_storage_enabled_render(  ) { 
-
-	$options = get_option( 'sp_settings' );
-    if (array_key_exists("sp_cold_storage_enabled",$options))
-  { } else { 
-    $options['sp_cold_storage_enabled'] = false;
-  }
-	?>
-	
-	<input type='checkbox' name='sp_settings[sp_cold_storage_enabled]' <?php checked( $options['sp_cold_storage_enabled'], 1 ); ?> value='1'>
-
-	<?php
-
-}
-
-
-function sp_cold_storage_address_render(  ) { 
-
-	$options = get_option( 'sp_settings' );
-	?>
-	<input class="cs-offline-wallet" type='text' name='sp_settings[sp_cold_storage_address]' value='<?php echo $options['sp_cold_storage_address']; ?>'>
-	<label class="cs-label">Address to send SECI to for safe storage</label>
-	<?php
-
-}
-
-
-function sp_cold_storage_max_amount_render(  ) { 
-
-	$options = get_option( 'sp_settings' );
-	?>
-	<input class="cs-max-amount" type='text' name='sp_settings[sp_cold_storage_max_amount]' value='<?php echo $options['sp_cold_storage_max_amount']; ?>'><span> SECI</span>
-	<label class="cs-label">Maximum Amount of SECI to keep in RPC Wallet</label>
-	<?php
-
-}
 	}
 
 	/*public function sp_text_field_0_render(  ) { 
@@ -126,11 +63,7 @@ function sp_cold_storage_max_amount_render(  ) {
 
 	}
 
-	public function sp_settings_section_coldstorage_callback(  ) { 
 
-		echo __( 'Cold Storage allows you the ability to send your wallet balance to another wallet address after a certain balance is reached on your payment gateway wallet.<br/> <strong>IMPORTANT:</strong> Please be sure your offline wallet address is correct before enabling.', 'wc-gateway-secipay' );
-
-	}
 	public function sp_settings_section_transactions_callback(  ) { 
        
 
@@ -140,32 +73,91 @@ function sp_cold_storage_max_amount_render(  ) {
 		    'payment_method' => 'secipay_gateway',
 		);
 		$orders = wc_get_orders( $args );
-    	$table = '<div class="tablewrapper"><table id="sp-transactions" class="display" style="width:100%" ><thead><tr><th>ID</th><th>Created</th><th>Order ID</th><th>User ID</th><th>TX ID</th><th>Amount</th><th>Wallet Address</th><th>Order Status</th></tr></thead><tbody>';
+    	$table = '<div id="sp-general" class="sp-tabs tablewrapper"><table id="sp-transactions" class="display" style="width:100%" ><thead><tr><th>ID</th><th>Created</th><th>Order ID</th><th>User ID</th><th>TX ID</th><th>Amount</th><th>Wallet Address</th><th>Order Status</th></tr></thead><tbody>';
     	$total_amount = 0;
     	$total_transactions = 0;
     	$count = 0;
     	foreach ( $orders as $order ){
     		 $count++;
     		 $seci_address = $order->get_meta('seci_address');
+    		 $coin = $order->get_meta('coin');
+    		 $block_explorer_url = get_post_meta( $coin, 'block_explorer_url', true );
+    		 $coin_name = get_post_meta( $coin, 'coin_name', true );
     		 $seci_amount = floatval($order->get_meta('seci_amount'));
-             $total_amount = $total_amount + $seci_amount;
+             //$total_amount = $total_amount + $seci_amount;
     		 $seci_txid = $order->get_meta('seci_txid');
     		 $order_id = $order->get_id();
              $table .= '<tr><td>' . $count . '</td>';
              $table .= '<td>' . $order->get_date_created() . '</td>';
              $table .= '<td><a href="/wp-admin/post.php?post=' . $order_id . '&action=edit">'. $order_id . '</a></td>';
              $table .= '<td>' . $order->get_customer_id() . '</td>';
-             $table .= '<td><a target="_blank" href="http://explorer.seci.io/tx/' . $seci_txid . '">' . $seci_txid  . '</a></td>';
-             $table .= '<td>' . $seci_amount . '</td>';
-             $table .= '<td><a target="_blank" href="http://explorer.seci.io/address/' . $seci_address . '">'. $seci_address .'</a></td>';
+             $table .= '<td><a target="_blank" href="' . $block_explorer_url . '/tx/' . $seci_txid . '">' . $seci_txid  . '</a></td>';
+             $table .= '<td>' . $seci_amount . ' '. $coin_name .'</td>';
+             $table .= '<td><a target="_blank" href="'. $block_explorer_url . '/address/' . $seci_address . '">'. $seci_address .'</a></td>';
              $table .= '<td>' . $order->get_status() . '</td></tr>';
     	}
     		$table .= '</tbody></table></div>';
-    	 	echo __( '<div class="sp-admin-total"><strong>Total Received: ' . $total_amount . ' SECI</strong></div>', 'wc-gateway-secipay' );
+    	 	echo __( '  <div id="sp-wrap" class="wrap"> <h2 class="nav-tab-wrapper"><a href="#sp-general" class="nav-tab sp-nav">Transactions</a><a href="#sp-coins" class="nav-tab sp-nav">Coins</a></h2><div class="sp-admin-total">', 'wc-gateway-secipay' );
     	 	echo __( $table , 'wc-gateway-secipay' );
+    	 	echo __( '</div>' , 'wc-gateway-secipay' );
+    	 	$query = new WP_Query( array( 'post_type' => 'secipaycoin','meta_key' => 'coin_name', 
+    'orderby' => 'meta_value', 
+    'order' => 'ASC' ) );
+    	 	if ( $query->have_posts() ) : ?>
+    	 	<?php 
 
+    	 	?>
+			<div id="sp-coins" class="sp-tabs"><div id="accordion">
+    		<?php while ( $query->have_posts() ) : $query->the_post(); ?>
+    		<?php
+    		    $coin_id = get_the_ID();
+				$coin_name = get_post_meta( $coin_id, 'coin_name', true );
+				$enabled = get_post_meta( $coin_id, 'enabled', true );
+				$checked = '';
+                if ($enabled == 'true'){
+                	$checked = 'checked';
+                } 
+				$confirmations = get_post_meta( $coin_id, 'confirmations', true );
+				$exchange_rate = get_post_meta( $coin_id, 'exchange_rate', true );
+				$cold_storage = get_post_meta( $coin_id, 'cold_storage', true );
+				$cs_checked = '';
+                if ($cold_storage == 'true'){
+                	$cs_checked = 'checked';
+                } 
+				$cold_storage_max_amount = get_post_meta( $coin_id, 'cold_storage_max_amount', true );
+				$cold_stoage_wallet_address = get_post_meta( $coin_id, 'cold_stoage_wallet_address', true );
+				$coin_rpc = get_post_meta($coin_id, "coin_rpc", true);
+                $rpc_password = get_post_meta($coin_id, "rpc_password", true);
+                $rpc_port = get_post_meta($coin_id, "rpc_port", true);
+                $rpc_username = get_post_meta($coin_id, "rpc_username", true);
+                $coin_name = get_post_meta($coin_id, "coin_name", true);
+                $SeciRPC = new Bitcoin($rpc_username,$rpc_password,$coin_rpc,$rpc_port);
+                $balance = $SeciRPC->getbalance();
+			
+    		 ?>
+     	   	<?php
+     	   	   $coin_image = get_the_post_thumbnail_url();
+     	   	   $toggle = '<label class="switch" onclick="coin_enable_toggle(event);"><input class="sp-coin-enable" data-id="'. $coin_id .'" type="checkbox" '. $checked .'><span class="slider round"></span>';
+     			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() . $toggle . '</h3>';
+				echo '<div><div class="sp-coin-data-cotainer"><div class="sp-coin-data col-md-2"><div class="sp-coin-heading"><label><strong>General Settings</strong></label></div><br>';
+				echo '<div class="sp-label-container"><label>Wallet Balance: </label><strong class="balance">' . $balance . '</strong></div><br>';
+				echo '<div class="sp-label-container"><label>Confirmations: </label><input type="text" coin-id="'. $coin_id .'" name="confirmations" value="' . esc_textarea( $confirmations )  . '" class="small-text"></div><br>';
+				echo '<div class="sp-label-container"><label>Exchange Rate: </label><input type="text" coin-id="'. $coin_id .'"  name="exchange_rate" value="' . esc_textarea( $exchange_rate )  . '" class="small-text"></div></div><div class="sp-coin-data col-md-2"><div class="sp-coin-heading"><label><strong>Cold Storage</strong></label></div><br>';
+				echo '<div class="sp-label-container"><label>Enabled</label><input type="checkbox" coin-id="'. $coin_id .'"  name="cold_storage" class="" '. $cs_checked .'></div><br>';
+				echo '<div class="sp-label-container"><label>Wallet Limit:</label><input type="text" coin-id="'. $coin_id .'"  name="cold_storage_max_amount" value="' . esc_textarea( $cold_storage_max_amount )  . '" class="small-text"></div><br>';
+				echo '<div class="sp-label-container"><label>Wallet Address:</label> <input class="cs-wallet-address" type="text" coin-id="'. $coin_id .'" name="cold_stoage_wallet_address" value="' . esc_textarea( $cold_stoage_wallet_address )  . '" class=""></div>';
+
+				echo '</div></div></div>';
+			?>
+        	<?php endwhile; wp_reset_postdata(); ?>
+    		<!-- show pagination here -->
+			<?php else : ?>
+		    <!-- show 404 error here -->
+			<?php endif; ?>  
+			</div></div>
+  		    <?php
 	}
-
+	// Options Page
 	public function sp_options_page(  ) { 
 		?>
 		<form action='options.php' method='post'>
@@ -175,11 +167,12 @@ function sp_cold_storage_max_amount_render(  ) {
 			<?php
 			settings_fields( 'pluginPage' );
 			do_settings_sections( 'pluginPage' );
-
-			submit_button();
+			
 			?>
 
 		</form>
+		<a href="#" class="button button-primary sp-coin-update"> Save Changes </a>	<div class="coin-saved hide"><span>Coin Data Saved!</span></div></div>
+	
 		<?php
 	}
 }

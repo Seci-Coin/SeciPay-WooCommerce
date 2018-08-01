@@ -1,17 +1,139 @@
+#accordion .ui-accordion-content {
+    height: 250px;
+    background: #fff;
+}
 .tablewrapper {
     padding: 10px 20px 0px 0px;
 }
-
-
+.sp-label-container label {
+    margin-right: 20px;
+}
+#sp-coins-table tr {
+	text-align: center;
+}
+.sp-coin-index img {
+    width: 16px;
+    vertical-align: bottom;
+    margin-right: 5px;
+}
+#sp-coins h3 {
+	margin:3px 0px !important;
+}
+.sp-coin-data.col-md-2 {
+    float: left;
+    margin: 30px;
+    background-color: #fcfcfc;
+    padding: 20px;
+}
 .cs-label {
     display: block;
     font-size: 12px;
     padding: 5px 0px 0px 5px;
 }
-
 .cs-offline-wallet{
 	min-width: 300px;
 }
 .cs-max-amount{
 	max-width: 100px;
+}
+.cs-wallet-address{
+  width:300px;
+}
+#sp-coins .ui-accordion-header {
+    padding:10px;
+    background:#fff;
+}
+#sp-coins .ui-accordion-content {
+    padding: 10px 0px 10px 0px;
+}
+#sp-coins {
+    margin-top: 20px;
+}
+.sp-label-container input[type="text"] {
+    border: none;
+    box-shadow: 0 0 20px rgba(0,0,0,.05);
+    background-color: #fff;
+    border-radius: 2px;
+    margin-left: 10px;
+    padding: 5px;
+}
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  float:right;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(16px);
+  -ms-transform: translateX(16px);
+  transform: translateX(16px);
+}
+.balance {
+  padding-left: 10px;
+}
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+a.button.button-primary.sp-coin-update {
+    /* float: right; */
+    margin-top: 20px;
+}
+.coin-saved {
+
+     opacity: 1;
+}
+.hide {opacity:0;}
+.coin-saved {
+    font-size: 17px;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 20px;
+    margin-left: 20px;
+    padding-top: 5px;
+    color: #139313;
+   
 }
