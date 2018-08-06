@@ -1,5 +1,5 @@
 #accordion .ui-accordion-content {
-    height: 250px;
+    height: 300px;
     background: #fff;
 }
 .tablewrapper {
@@ -56,6 +56,37 @@
     border-radius: 2px;
     margin-left: 10px;
     padding: 5px;
+}
+
+/* Coin Status */
+.sp-status-icon.sp-coind-connected {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: lime;
+    margin-right: 5px;
+}
+
+.sp-coind-status {
+display: inline-flex;
+    align-items: center;
+    padding-right: 20px;
+    float: right;
+    min-width: 125px;
+    text-align: left;
+}
+
+.sp-coind-status strong {
+    padding:0px 5px 0px 0px;
+    font-size: 12px !important;
+}
+.sp-status-icon.sp-coind-error {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff001f;
+    margin-right: 5px;
+    
 }
 /* The switch - the box around the slider */
 .switch {

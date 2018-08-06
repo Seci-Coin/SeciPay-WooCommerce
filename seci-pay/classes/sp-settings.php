@@ -14,7 +14,7 @@ class SeciPaySettings{
 	public function sp_add_admin_menu(  ) { 
 
 		add_menu_page( 'SeciPay', 'SeciPay', 'manage_options', 'woocommerce_secipay_gateway',  array( $this,'sp_options_page' ),  plugin_dir_url( __FILE__ ) . '../images/icon.png');
-		add_submenu_page('woocommerce_secipay_gateway', 'Coins', 'Coins', 'manage_options','edit.php?post_type=secipaycoin');
+		//add_submenu_page('woocommerce_secipay_gateway', 'Coins', 'Coins', 'manage_options','edit.php?post_type=secipaycoin');
 
 	}
 
@@ -100,7 +100,9 @@ class SeciPaySettings{
     	 	echo __( '  <div id="sp-wrap" class="wrap"> <h2 class="nav-tab-wrapper"><a href="#sp-general" class="nav-tab sp-nav">Transactions</a><a href="#sp-coins" class="nav-tab sp-nav">Coins</a></h2><div class="sp-admin-total">', 'wc-gateway-secipay' );
     	 	echo __( $table , 'wc-gateway-secipay' );
     	 	echo __( '</div>' , 'wc-gateway-secipay' );
-    	 	$query = new WP_Query( array( 'post_type' => 'secipaycoin' ) );
+    	 	$query = new WP_Query( array( 'post_type' => 'secipaycoin','meta_key' => 'coin_name', 
+    'orderby' => 'meta_value', 
+    'order' => 'ASC' ) );
     	 	if ( $query->have_posts() ) : ?>
     	 	<?php 
 
@@ -131,12 +133,19 @@ class SeciPaySettings{
                 $coin_name = get_post_meta($coin_id, "coin_name", true);
                 $SeciRPC = new Bitcoin($rpc_username,$rpc_password,$coin_rpc,$rpc_port);
                 $balance = $SeciRPC->getbalance();
-			
+				$daemon_info = $SeciRPC->getnetworkinfo();
+				if (!$daemon_info){
+					$rpc_error = $SeciRPC->error;
+					$status = '<div class="sp-coind-status"><div class="sp-status-icon sp-coind-error"></div><strong><span>Error</span></strong> </div>';
+				} else {
+					$status = '<div class="sp-coind-status"><div class="sp-status-icon sp-coind-connected"></div><strong><span>Connected</span></strong></div>';
+				
+				}
     		 ?>
      	   	<?php
      	   	   $coin_image = get_the_post_thumbnail_url();
      	   	   $toggle = '<label class="switch" onclick="coin_enable_toggle(event);"><input class="sp-coin-enable" data-id="'. $coin_id .'" type="checkbox" '. $checked .'><span class="slider round"></span>';
-     			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() . $toggle . '</h3>';
+     			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() .  $toggle . $status  .'</h3>';
 				echo '<div><div class="sp-coin-data-cotainer"><div class="sp-coin-data col-md-2"><div class="sp-coin-heading"><label><strong>General Settings</strong></label></div><br>';
 				echo '<div class="sp-label-container"><label>Wallet Balance: </label><strong class="balance">' . $balance . '</strong></div><br>';
 				echo '<div class="sp-label-container"><label>Confirmations: </label><input type="text" coin-id="'. $coin_id .'" name="confirmations" value="' . esc_textarea( $confirmations )  . '" class="small-text"></div><br>';

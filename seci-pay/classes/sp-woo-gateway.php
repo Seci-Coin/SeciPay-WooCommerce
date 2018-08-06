@@ -58,14 +58,7 @@ function wc_secipay_gateway_init() {
 			$this->init_settings();
 			// Define user set variables
 			$this->description  = $this->get_option( 'description' );
-			$this->exchange_rate  = $this->get_option( 'exchange_rate' );
-			$this->txid_confirmations  = $this->get_option( 'txid_confirmations' );
-			$this->rpc_server  = $this->get_option( 'rpc_server' );
-			$this->rpc_username  = $this->get_option( 'rpc_username' );
-			$this->rpc_password  = $this->get_option( 'rpc_password' );
-			$this->rpc_port  = $this->get_option( 'rpc_port' );
 			$this->title        = $this->get_option( 'title' );
-			$this->description  = $this->get_option( 'description' );
 			$this->instructions = $this->get_option( 'instructions', $this->description );
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -109,48 +102,6 @@ function wc_secipay_gateway_init() {
 					'default'     => __( 'Pay with SECI', 'woocommerce' ),
 					'desc_tip'    => true,
 				),
-				'exchange_rate' => array(
-					'title'       => __( 'Exchange Rate', 'wc-gateway-secipay' ),
-					'type'        => 'text',
-					'description' => __( 'Manual Exchange rate Example (1000)', 'wc-gateway-secipay' ),
-					'default'     => __( '1', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
-				'txid_confirmations' => array(
-					'title'       => __( 'Confirmations', 'wc-gateway-secipay' ),
-					'type'        => 'number',
-					'description' => __( 'This is how many confirmations a transaction needs before being marked as complete', 'wc-gateway-secipay' ),
-					'default'     => __( '6', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
-				'rpc_server' => array(
-					'title'       => __( 'Coin RPC Server', 'wc-gateway-secipay' ),
-					'type'        => 'text',
-					'description' => __( 'Server Address of Coind rpc server', 'wc-gateway-secipay' ),
-					'default'     => __( '127.0.0.1', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
-				'rpc_username' => array(
-					'title'       => __( 'RPC Username', 'wc-gateway-secipay' ),
-					'type'        => 'text',
-					'description' => __( 'RPC Username', 'wc-gateway-secipay' ),
-					'default'     => __( 'Your RPC Username', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
-				'rpc_password' => array(
-					'title'       => __( 'RPC Password', 'wc-gateway-secipay' ),
-					'type'        => 'password',
-					'description' => __( 'Password', 'wc-gateway-secipay' ),
-					'default'     => __( '', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
-				'rpc_port' => array(
-					'title'       => __( 'RPC Port', 'wc-gateway-secipay' ),
-					'type'        => 'text',
-					'description' => __( 'RPC Port Number', 'wc-gateway-secipay' ),
-					'default'     => __( '9818', 'wc-gateway-secipay' ),
-					'desc_tip'    => true,
-				),
 				'instructions' => array(
 					'title'       => __( 'Instructions', 'wc-gateway-secipay' ),
 					'type'        => 'textarea',
@@ -163,7 +114,9 @@ function wc_secipay_gateway_init() {
 		public function payment_fields() {
 
 
-			$query = new WP_Query( array( 'post_type' => 'secipaycoin', 'meta_query' => array( array('key' => 'enabled','value' => 'true'))));
+			$query = new WP_Query( array( 'post_type' => 'secipaycoin', 'meta_key' => 'coin_name', 
+    'orderby' => 'meta_value', 
+    'order' => 'ASC', 'meta_query' => array( array('key' => 'enabled','value' => 'true'))));
 			if ( $query->have_posts() ) : ?>
 				<p> Choose your Currency:</p>
 				<div id="secipay-currency">
@@ -199,13 +152,41 @@ function wc_secipay_gateway_init() {
 			    $order_id = $order->get_id();
 			    $order_total = $order->get_total();
 			    $coin = $order->get_meta('coin');
-			    $coin_name = get_post_meta($coin, "coin_name", true);   
-			    $exchange_rate = get_post_meta($coin, "exchange_rate", true);   
-			    $amount = round(  $order_total / $exchange_rate, 8 );
+			    $coin_name = get_post_meta($coin, "coin_name", true);
+			    $exchange_url = get_post_meta($coin, "exchange_url", true);
+			    $exchange_rate = get_post_meta($coin, "exchange_rate", true);
+			    if ($coin_name == 'Seci'){
+			    	$bitcoin_exchange_url = 'https://api.coingecko.com/api/v3/coins/bitcoin?localization=en';
+					$bitcoin_exchange_response = wp_remote_get( esc_url_raw( $bitcoin_exchange_url ) );
+					$bitcoin_exchange_data = json_decode( wp_remote_retrieve_body( $bitcoin_exchange_response ), true );
+					$bitcoin_exchange_rate_usd = $bitcoin_exchange_data['market_data']['current_price']['usd'];
+					$seci_exchange_response = wp_remote_get( esc_url_raw( $exchange_url ) );
+					$seci_exchange_data = json_decode( wp_remote_retrieve_body( $seci_exchange_response ), true );
+					//write_log($seci_exchange_data);
+					$seci_btc = $seci_exchange_data['secibtc']['ticker']['buy'];
+					if($seci_btc){
+						$seci_exchange = round($bitcoin_exchange_rate_usd * $seci_btc, 20 );
+						$amount = round(  $order_total / $seci_exchange, 8 );
+					} else {
+						$amount = round(  $order_total / $exchange_rate, 8 );
+					}
+			    } else {
+				    $exchange_response = wp_remote_get( esc_url_raw( $exchange_url ) );
+					$exchange_data = json_decode( wp_remote_retrieve_body( $exchange_response ), true );
+					$exchange_rate_usd = $exchange_data['market_data']['current_price']['usd'];
+					if ($exchange_rate_usd){
+						$amount = round(  $order_total / $exchange_data['market_data']['current_price']['usd'], 8 );
+					} else {
+						$amount = round(  $order_total / $exchange_rate, 8 );
+					} 	
+			    	
+			    }
+	     
 			    update_post_meta( $order_id, 'seci_amount', $amount );
 			    $order = wc_get_order($order_id);
 			    $address = get_post_meta( $order_id, 'seci_address', true);
-			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status">Order has been created. <span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> ' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p>Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
+			    $coin_icon = get_the_post_thumbnail_url($coin);
+			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status"><span class="sp-order-status-update">Order has been created.</span> <span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> '. '<br><img class="coin-icon" src="' . $coin_icon . '">' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p class="sp-order-text">Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
 		}
 		public function process_custom_payment(){
 
@@ -262,11 +243,10 @@ function wc_secipay_gateway_init() {
 			$address = $bitcoin->getnewaddress();                    
             $exchange_rate = $this->exchange_rate;
             $cart_total = $woocommerce->cart->cart_contents_total;
-            $amount = round(  $cart_total / $exchange_rate, 10 );
-            update_post_meta( $order_id, 'seci_amount', $amount );
+         
             update_post_meta( $order_id, 'seci_address', $address);
             $note = 'SeciPay <br/> Type: '. $coin_name . ' <br/>Address: ' . $address;
-            $note .= '<br/>Pending Amount: ' . $amount;
+          
             $order->add_order_note( $note );
             $user_id = $order->get_user_id(); // or $order->get_customer_id();
 			// Remove cart

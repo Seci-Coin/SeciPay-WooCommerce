@@ -5,7 +5,7 @@
  * Description: SeciPay Woocommerce Gateway
  * Author: Seci Team
  * Author URI: http://www.seci.io
- * Version: 0.0.2
+ * Version: 1
  * Text Domain: wc-gateway-secipay
  * Domain Path: /i18n/languages/
  *
@@ -51,6 +51,7 @@ class SeciPayWooGateway{
   	 public function __construct(){
         register_activation_hook(__FILE__, array( $this,'cron_activation'));
         register_deactivation_hook(__FILE__, array( $this, 'sp_deactivation'));
+        register_activation_hook( __FILE__ , array( $this,'secipay_create_coin_data'));
         add_action("admin_enqueue_scripts",array( $this, "sp_admin_enqueue"));
         add_action( 'wp_enqueue_scripts', array( $this, 'sp_enqueue_scripts') );
  		add_action( 'wp_ajax_order_checking',array( $this, 'order_checking'));
@@ -70,7 +71,52 @@ class SeciPayWooGateway{
             update_post_meta( $coin_id , 'enabled', $enabled);
             exit;
     }
-  
+        /**
+     * Output the HTML for the metabox.
+     */
+    public function secipay_create_coin_data() {
+            global $wpdb;
+            $coins = [];
+            $coins[] = array("title"=>'Bitcoin', "name"=>'bitcoin', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://api.coingecko.com/api/v3/coins/bitcoin?localization=en', "explorer_url"=>'https://blockexplorer.com',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');
+            $coins[] = array("title"=>'Raven', "name"=>'raven', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://ravencoin.network/api/tx/', "explorer_url"=>'https://ravencoin.network',"enabled"=>'false', "exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');
+            $coins[] = array("title"=>'Seci', "name"=>'Seci', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://safe.trade/api/v2/tickers', "explorer_url"=>'http://159.203.126.66/api/getrawtransaction?txid=',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');            
+             foreach ($coins as $coin){
+
+           
+
+                         // Create post object
+                    $newCoin = array();
+                    $newCoin['post_title'] = $coin['title'];
+                    $newCoin['post_status'] = 'publish';
+                    $newCoin['post_type'] = 'secipaycoin';
+                    $newCoin['meta_input'] = array(
+                                    'coin_name'=> $coin['name'],
+                                    'coin_rpc'=> $coin['coin_rpc'],
+                                    'confirmations'=> $coin['confirmations'],
+                                    'exchange_rate'=> $coin['exchange_rate'],
+                                    'rpc_port'=> $coin['rpc_port'],
+                                    'rpc_username'=> $coin['rpc_username'],
+                                    'rpc_password'=> $coin['rpc_password'],
+                                    'explorer_url'=> $coin['explorer_url'],
+                                    'cold_stoage_wallet_address'=> $coin['cold_stoage_wallet_address'],
+                                    'cold_storage'=> $coin['cold_storage'],
+                                    'cold_storage_max_amount'=> $coin['cold_storage_max_amount'],
+                                    'exchange_url'=> $coin['exchange_url'],
+                            );
+                    
+                        $newCoinID = wp_insert_post( $newCoin );
+
+           
+
+             }
+
+
+        
+
+
+
+
+    }
     public function coin_meta_update(){
            
             $data = $_POST['data'];
@@ -203,11 +249,8 @@ class SeciPayWooGateway{
     public function order_checking() {
     	$order_id = $_POST['order_id'];
         $order = wc_get_order( $order_id );
-        if( $order->get_status() == 'pending' ){
-            echo 'pending';
-        } else {
-            echo 'confirmed';
-        }
+        $order_status = $order->get_status();
+        echo $order_status;
      	die();
 	}  
 
@@ -285,6 +328,7 @@ class SeciPayWooGateway{
             $seci_address = $order->get_meta('seci_address');
             $seci_amount = floatval($order->get_meta('seci_amount'));
             $coin = $order->get_meta('coin');
+            $confirmations = get_post_meta($coin, "confirmations", true);
             $explorer_type = get_post_meta($coin, "explorer_type", true);
 			$explorer_url = get_post_meta($coin, "explorer_url", true);
             $coin_name = get_post_meta($coin, "coin_name", true);
@@ -299,17 +343,23 @@ class SeciPayWooGateway{
                 $rpc_username = get_post_meta($coin, "rpc_username", true);
                 $SeciRPC = new Bitcoin($rpc_username,$rpc_password,$coin_rpc,$rpc_port);
                 $txinfo = $SeciRPC->gettransaction($seci_txid);
+                $address_amount = $SeciRPC->getreceivedbyaddress($seci_address);
                 if ($SeciRPC->error){
                     echo 'Error' . $SeciRPC->error;
                 }                     
                 $tx_confirmations = $txinfo["confirmations"];
-                write_log('details:' .  $details );
-                if ($tx_confirmations >  $confirmations){
+            //    write_log('details:' .  $details );
+                if ($address_amount !== $seci_amount){
+
+                    $amount_owed = floatval($address_amount) - floatval($seci_amount);
+                      $order->update_status( 'on-hold', __( 'Marked order as On Hold. Cost Mismatch ' . $coin_name . ' Amount Owed: ' . $amount_owed . 'C', 'wc-gateway-secipay' ) );
+                }
+                if ($tx_confirmations >=  $confirmations && $address_amount == $seci_amount ){
                          $order->update_status( 'processing', __( 'Marked order as processing - ' . $coin_name . ' received: ' . $seci_amount, 'wc-gateway-secipay' ) );
                 }
                 $result = json_decode($response, true);
-                write_log('TXID: ' . $seci_txid . ' Confirmation: ' . $result["confirmations"] );
-                write_log('TXID: ' . $seci_txid . ' Settings Confirmation: ' .  $confirmations );
+              //  write_log('TXID: ' . $seci_txid . ' Confirmation: ' . $result["confirmations"] );
+               // write_log('TXID: ' . $seci_txid . ' Settings Confirmation: ' .  $confirmations );
       
             }
         
