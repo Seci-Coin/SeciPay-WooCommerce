@@ -58,14 +58,7 @@ function wc_secipay_gateway_init() {
 			$this->init_settings();
 			// Define user set variables
 			$this->description  = $this->get_option( 'description' );
-			$this->exchange_rate  = $this->get_option( 'exchange_rate' );
-			$this->txid_confirmations  = $this->get_option( 'txid_confirmations' );
-			$this->rpc_server  = $this->get_option( 'rpc_server' );
-			$this->rpc_username  = $this->get_option( 'rpc_username' );
-			$this->rpc_password  = $this->get_option( 'rpc_password' );
-			$this->rpc_port  = $this->get_option( 'rpc_port' );
 			$this->title        = $this->get_option( 'title' );
-			$this->description  = $this->get_option( 'description' );
 			$this->instructions = $this->get_option( 'instructions', $this->description );
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -193,7 +186,7 @@ function wc_secipay_gateway_init() {
 			    $order = wc_get_order($order_id);
 			    $address = get_post_meta( $order_id, 'seci_address', true);
 			    $coin_icon = get_the_post_thumbnail_url($coin);
-			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status">Order has been created. <span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> '. '<br><img class="coin-icon" src="' . $coin_icon . '">' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p>Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
+			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status"><span class="sp-order-status-update">Order has been created.</span> <span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> '. '<br><img class="coin-icon" src="' . $coin_icon . '">' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p class="sp-order-text">Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
 		}
 		public function process_custom_payment(){
 
@@ -250,11 +243,10 @@ function wc_secipay_gateway_init() {
 			$address = $bitcoin->getnewaddress();                    
             $exchange_rate = $this->exchange_rate;
             $cart_total = $woocommerce->cart->cart_contents_total;
-            $amount = round(  $cart_total / $exchange_rate, 10 );
-            update_post_meta( $order_id, 'seci_amount', $amount );
+         
             update_post_meta( $order_id, 'seci_address', $address);
             $note = 'SeciPay <br/> Type: '. $coin_name . ' <br/>Address: ' . $address;
-            $note .= '<br/>Pending Amount: ' . $amount;
+          
             $order->add_order_note( $note );
             $user_id = $order->get_user_id(); // or $order->get_customer_id();
 			// Remove cart

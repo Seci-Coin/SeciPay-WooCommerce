@@ -82,6 +82,9 @@ p.sp-cost, p.sp-order-status {
 .pulse.waiting {
   animation-name: waiting;
 }
+.pulse.on-hold {
+  animation-name: onhold;
+}
 
 .pulse.confirmed {
   animation-name: confirmed;
@@ -105,6 +108,17 @@ p.sp-cost, p.sp-order-status {
   }
   50% {
     background-color: #88ff88;
+  }
+  100 {
+    background-color: transparent;
+  }
+}
+@keyframes onhold {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #fff435;
   }
   100 {
     background-color: transparent;

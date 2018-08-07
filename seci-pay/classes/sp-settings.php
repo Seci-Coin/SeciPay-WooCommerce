@@ -133,12 +133,19 @@ class SeciPaySettings{
                 $coin_name = get_post_meta($coin_id, "coin_name", true);
                 $SeciRPC = new Bitcoin($rpc_username,$rpc_password,$coin_rpc,$rpc_port);
                 $balance = $SeciRPC->getbalance();
-			
+				$daemon_info = $SeciRPC->getnetworkinfo();
+				if (!$daemon_info){
+					$rpc_error = $SeciRPC->error;
+					$status = '<div class="sp-coind-status"><div class="sp-status-icon sp-coind-error"></div><strong><span>Error</span></strong> </div>';
+				} else {
+					$status = '<div class="sp-coind-status"><div class="sp-status-icon sp-coind-connected"></div><strong><span>Connected</span></strong></div>';
+				
+				}
     		 ?>
      	   	<?php
      	   	   $coin_image = get_the_post_thumbnail_url();
      	   	   $toggle = '<label class="switch" onclick="coin_enable_toggle(event);"><input class="sp-coin-enable" data-id="'. $coin_id .'" type="checkbox" '. $checked .'><span class="slider round"></span>';
-     			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() . $toggle . '</h3>';
+     			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() .  $toggle . $status  .'</h3>';
 				echo '<div><div class="sp-coin-data-cotainer"><div class="sp-coin-data col-md-2"><div class="sp-coin-heading"><label><strong>General Settings</strong></label></div><br>';
 				echo '<div class="sp-label-container"><label>Wallet Balance: </label><strong class="balance">' . $balance . '</strong></div><br>';
 				echo '<div class="sp-label-container"><label>Confirmations: </label><input type="text" coin-id="'. $coin_id .'" name="confirmations" value="' . esc_textarea( $confirmations )  . '" class="small-text"></div><br>';
