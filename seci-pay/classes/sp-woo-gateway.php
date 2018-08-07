@@ -121,7 +121,8 @@ function wc_secipay_gateway_init() {
 				<p> Choose your Currency:</p>
 				<div id="secipay-currency">
 	    		<?php while ( $query->have_posts() ) : $query->the_post(); ?>   
-	    		<div class="secipay-currency"><label><?php the_post_thumbnail()?> <br> <?php the_title(); ?></label><input type="radio" name="secipaycoin" value="<?php the_ID(); ?>"></div>     
+	    	    <?php $coin_image_url =  get_post_meta( get_the_ID(), 'coin_image', true );  ?>
+	    	    <div class="secipay-currency"><label> <img src="<?php echo $coin_image_url; ?>"><br> <?php the_title(); ?></label><input type="radio" name="secipaycoin" value="<?php the_ID(); ?>"></div>     
 			    <?php endwhile; wp_reset_postdata(); ?>
 				</div> 
 			<?php else : ?>
@@ -185,8 +186,9 @@ function wc_secipay_gateway_init() {
 			    update_post_meta( $order_id, 'seci_amount', $amount );
 			    $order = wc_get_order($order_id);
 			    $address = get_post_meta( $order_id, 'seci_address', true);
-			    $coin_icon = get_the_post_thumbnail_url($coin);
-			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status"><span class="sp-order-status-update">Order has been created.</span> <span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> '. '<br><img class="coin-icon" src="' . $coin_icon . '">' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p class="sp-order-text">Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
+			    $coin_image_url = get_post_meta( $coin, 'coin_image', true);
+			   // $coin_icon = get_the_post_thumbnail_url($coin);
+			    echo '<div class="secipay-address-container"><div class="sp-address-container"><p class="sp-order-status"><span class="sp-order-status-update">Order has been created.</span><br><span class="pulse waiting">Awaiting Payment.</span></p><p class="sp-cost"><strong>'.  $amount .'</strong> '. '<br><img class="coin-icon" src="' . $coin_image_url . '">' . $coin_name  . '</p><input id="secipay-address" type="text" name="secipay-address" value="'.  $address . '"><p class="sp-order-text">Please send the exact amount owed to the address above. <br/>You can leave this page up to check the status of your payment</p></div><div class="sp-qrcode-container"><div id="qrcode"></div></div></div>';  
 		}
 		public function process_custom_payment(){
 

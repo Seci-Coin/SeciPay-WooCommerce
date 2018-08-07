@@ -143,7 +143,7 @@ class SeciPaySettings{
 				}
     		 ?>
      	   	<?php
-     	   	   $coin_image = get_the_post_thumbnail_url();
+     	   	   $coin_image =  get_post_meta( $coin_id, 'coin_image', true );  
      	   	   $toggle = '<label class="switch" onclick="coin_enable_toggle(event);"><input class="sp-coin-enable" data-id="'. $coin_id .'" type="checkbox" '. $checked .'><span class="slider round"></span>';
      			echo '<div class="sp-coin-index" data-id="'. $coin_id .'"><h3><img src="'. $coin_image . '"/>' . get_the_title() .  $toggle . $status  .'</h3>';
 				echo '<div><div class="sp-coin-data-cotainer"><div class="sp-coin-data col-md-2"><div class="sp-coin-heading"><label><strong>General Settings</strong></label></div><br>';

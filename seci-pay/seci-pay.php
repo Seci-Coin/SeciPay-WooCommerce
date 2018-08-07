@@ -76,10 +76,11 @@ class SeciPayWooGateway{
      */
     public function secipay_create_coin_data() {
             global $wpdb;
+            $image_dir = plugin_dir_url( __FILE__ );
             $coins = [];
-            $coins[] = array("title"=>'Bitcoin', "name"=>'bitcoin', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://api.coingecko.com/api/v3/coins/bitcoin?localization=en', "explorer_url"=>'https://blockexplorer.com',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');
-            $coins[] = array("title"=>'Raven', "name"=>'raven', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://ravencoin.network/api/tx/', "explorer_url"=>'https://ravencoin.network',"enabled"=>'false', "exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');
-            $coins[] = array("title"=>'Seci', "name"=>'Seci', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://safe.trade/api/v2/tickers', "explorer_url"=>'http://159.203.126.66/api/getrawtransaction?txid=',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ');            
+            $coins[] = array("title"=>'Bitcoin', "name"=>'bitcoin', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://api.coingecko.com/api/v3/coins/bitcoin?localization=en', "explorer_url"=>'https://blockexplorer.com',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ', "cold_stoage_wallet_address"=>' ', 'coin_image' => $image_dir . 'assets/img/bitcoin_140x140.png');
+            $coins[] = array("title"=>'Raven', "name"=>'raven', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://ravencoin.network/api/tx/', "explorer_url"=>'https://ravencoin.network',"enabled"=>'false', "exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ', 'coin_image' => $image_dir . 'assets/img/ravencoin_140x140.png');
+            $coins[] = array("title"=>'Seci', "name"=>'Seci', "coin_rpc"=>' ', "rpc_port"=>' ',"rpc_username"=>' ',"rpc_password"=>' ',"confirmations"=>' ',"exchange_url"=>'https://safe.trade/api/v2/tickers', "explorer_url"=>'http://159.203.126.66/api/getrawtransaction?txid=',"enabled"=>'false',"exchange_rate"=>' ',"cold_storage"=>'false',"confirmations"=>'0',"cold_storage_max_amount"=>'0',"cold_stoage_wallet_address"=>' ', 'coin_image' => $image_dir . 'assets/img/seci_140x140.png');            
              foreach ($coins as $coin){
 
            
@@ -102,19 +103,10 @@ class SeciPayWooGateway{
                                     'cold_storage'=> $coin['cold_storage'],
                                     'cold_storage_max_amount'=> $coin['cold_storage_max_amount'],
                                     'exchange_url'=> $coin['exchange_url'],
+                                    'coin_image' => $coin['coin_image']
                             );
-                    
-                        $newCoinID = wp_insert_post( $newCoin );
-
-           
-
+                    $newCoinID = wp_insert_post( $newCoin );         
              }
-
-
-        
-
-
-
 
     }
     public function coin_meta_update(){
