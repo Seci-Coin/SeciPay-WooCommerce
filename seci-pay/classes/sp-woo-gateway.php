@@ -156,6 +156,9 @@ function wc_secipay_gateway_init() {
 			    $coin_name = get_post_meta($coin, "coin_name", true);
 			    $exchange_url = get_post_meta($coin, "exchange_url", true);
 			    $exchange_rate = get_post_meta($coin, "exchange_rate", true);
+			    $order_checked= get_post_meta( $order_id, 'order_checked', true );
+			    if ($order_checked !== 'true'){
+			    	write_log('not true');
 			    if ($coin_name == 'Seci'){
 			    	$bitcoin_exchange_url = 'https://api.coingecko.com/api/v3/coins/bitcoin?localization=en';
 					$bitcoin_exchange_response = wp_remote_get( esc_url_raw( $bitcoin_exchange_url ) );
@@ -184,7 +187,12 @@ function wc_secipay_gateway_init() {
 			    }
 	     
 			    update_post_meta( $order_id, 'seci_amount', $amount );
-			    $order = wc_get_order($order_id);
+			    update_post_meta( $order_id, 'order_checked', 'true' );
+			    } else {
+
+			    	$amount = get_post_meta( $order_id, 'seci_amount', true);
+			    }
+			    //$order = wc_get_order($order_id);
 			    $address = get_post_meta( $order_id, 'seci_address', true);
 			    $coin_image_url = get_post_meta( $coin, 'coin_image', true);
 			   // $coin_icon = get_the_post_thumbnail_url($coin);

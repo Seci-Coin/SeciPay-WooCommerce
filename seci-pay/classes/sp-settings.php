@@ -59,7 +59,7 @@ class SeciPaySettings{
 
 	public function sp_settings_section_callback(  ) { 
 
-		echo __( 'To change settings related to the gateway, visit the SeciPay Gateway settings page <a href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=secipay_gateway">here</a>', 'wc-gateway-secipay' );
+		echo __( 'To change settings related to the gateway, visit the SeciPay Gateway settings page <a href="'. get_admin_url() .'admin.php?page=wc-settings&tab=checkout&section=secipay_gateway">here</a>', 'wc-gateway-secipay' );
 
 	}
 
@@ -73,7 +73,7 @@ class SeciPaySettings{
 		    'payment_method' => 'secipay_gateway',
 		);
 		$orders = wc_get_orders( $args );
-    	$table = '<div id="sp-general" class="sp-tabs tablewrapper"><table id="sp-transactions" class="display" style="width:100%" ><thead><tr><th>ID</th><th>Created</th><th>Order ID</th><th>User ID</th><th>TX ID</th><th>Amount</th><th>Wallet Address</th><th>Order Status</th></tr></thead><tbody>';
+    	$table = '<div id="sp-general" class="sp-tabs tablewrapper"><table id="sp-transactions" class="display" style="width:100%" ><thead><tr><th>ID</th><th>Created</th><th>Order ID</th><th>TX ID</th><th>Order Total </th><th>Amount Received </th><th>Wallet Address</th><th>Order Status</th></tr></thead><tbody>';
     	$total_amount = 0;
     	$total_transactions = 0;
     	$count = 0;
@@ -84,15 +84,17 @@ class SeciPaySettings{
     		 $block_explorer_url = get_post_meta( $coin, 'block_explorer_url', true );
     		 $coin_name = get_post_meta( $coin, 'coin_name', true );
     		 $seci_amount = floatval($order->get_meta('seci_amount'));
+    		 $amount_received = floatval($order->get_meta('amount_received'));
+
              //$total_amount = $total_amount + $seci_amount;
     		 $seci_txid = $order->get_meta('seci_txid');
     		 $order_id = $order->get_id();
              $table .= '<tr><td>' . $count . '</td>';
              $table .= '<td>' . $order->get_date_created() . '</td>';
              $table .= '<td><a href="/wp-admin/post.php?post=' . $order_id . '&action=edit">'. $order_id . '</a></td>';
-             $table .= '<td>' . $order->get_customer_id() . '</td>';
-             $table .= '<td><a target="_blank" href="' . $block_explorer_url . '/tx/' . $seci_txid . '">' . $seci_txid  . '</a></td>';
+                        $table .= '<td><a target="_blank" href="' . $block_explorer_url . '/tx/' . $seci_txid . '">' . $seci_txid  . '</a></td>';
              $table .= '<td>' . $seci_amount . ' '. $coin_name .'</td>';
+             $table .= '<td>' . $amount_received . ' '. $coin_name .'</td>';
              $table .= '<td><a target="_blank" href="'. $block_explorer_url . '/address/' . $seci_address . '">'. $seci_address .'</a></td>';
              $table .= '<td>' . $order->get_status() . '</td></tr>';
     	}

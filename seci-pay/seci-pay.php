@@ -308,26 +308,23 @@ class SeciPayWooGateway{
      */
     public function secipay_check_tx_confirmations() {
         $SeciWooGateway = new WC_Gateway_Secipay();
-        $confirmations = (int)$SeciWooGateway->get_option('txid_confirmations');
         $args = array(
                 'limit' => -1,
                 'payment_method' => 'secipay_gateway',
-                'status' => array('pending'),
+                'status' => array('pending', 'on-hold'),
         );
+
         $orders = wc_get_orders( $args );
         foreach ( $orders as $order ){ 
-            $seci_txid = $order->get_meta('seci_txid');
-            $seci_address = $order->get_meta('seci_address');
-            $seci_amount = floatval($order->get_meta('seci_amount'));
-            $coin = $order->get_meta('coin');
+            $seci_txid = $order->get_meta('seci_txid', true);
+            $seci_address = $order->get_meta('seci_address', true);
+            $seci_amount = $order->get_meta('seci_amount', true);
+            $coin = $order->get_meta('coin', true);
             $confirmations = get_post_meta($coin, "confirmations", true);
             $explorer_type = get_post_meta($coin, "explorer_type", true);
 			$explorer_url = get_post_meta($coin, "explorer_url", true);
-            $coin_name = get_post_meta($coin, "coin_name", true);
-            write_log('explorer_type ' . $explorer_type);
-            write_log('explorer_url ' . $explorer_url);
             $order_id = $order->get_id();
-            if($seci_txid){
+            if(isset($seci_txid)){
                 write_log( "TXID Found: " . $seci_txid );     
                 $coin_rpc = get_post_meta($coin, "coin_rpc", true);
                 $rpc_password = get_post_meta($coin, "rpc_password", true);
@@ -335,21 +332,40 @@ class SeciPayWooGateway{
                 $rpc_username = get_post_meta($coin, "rpc_username", true);
                 $SeciRPC = new Bitcoin($rpc_username,$rpc_password,$coin_rpc,$rpc_port);
                 $txinfo = $SeciRPC->gettransaction($seci_txid);
-                $address_amount = $SeciRPC->getreceivedbyaddress($seci_address);
+                $address_amount = $SeciRPC->getreceivedbyaddress($seci_address, 0);
+                write_log('Address amount');
+                write_log($seci_address);
+                write_log($address_amount);
                 if ($SeciRPC->error){
-                    echo 'Error' . $SeciRPC->error;
+                    write_log('Error: ' . $SeciRPC->error);
                 }                     
                 $tx_confirmations = $txinfo["confirmations"];
             //    write_log('details:' .  $details );
-                if ($address_amount !== $seci_amount){
 
-                    $amount_owed = floatval($address_amount) - floatval($seci_amount);
-                      $order->update_status( 'on-hold', __( 'Marked order as On Hold. Cost Mismatch ' . $coin_name . ' Amount Owed: ' . $amount_owed . 'C', 'wc-gateway-secipay' ) );
+    			$order_amount_owed =  round($seci_amount, 8);
+                $order_amount_received = round($address_amount, 8);
+                write_log('seci_address amounts after rounded');
+                write_log('seci_address' . $seci_address);
+                write_log('order_amount_received' .  $order_amount_received);
+                write_log('order_amount_owed' .  $order_amount_owed);
+          
+                /*if ($order_amount_received !== $order_amount_owed && $order_amount_received !== 0 && $order_amount_received !== '0' ){
+
+                   $amount_owed =  $order_amount_owed - $order_amount_received;
+                   update_post_meta($order_id, "amount_received", $order_amount_received );
+                      $order->update_status( 'on-hold', __( 'Marked order as On Hold. Cost Mismatch ' . $coin_name . 'Amount Received: '. $order_amount_received .' Amount Owed: ' . $amount_owed, 'wc-gateway-secipay' ) );
+                } */
+                if ($tx_confirmations >= $confirmations && $address_amount >= $seci_amount ){
+                        $order->update_status( 'processing', __( 'Marked order as processing - ' . $coin_name . ' received: ' . $seci_amount, 'wc-gateway-secipay' ) );
+                        update_post_meta($order_id, "amount_received", $order_amount_received );
                 }
-                if ($tx_confirmations >=  $confirmations && $address_amount == $seci_amount ){
-                         $order->update_status( 'processing', __( 'Marked order as processing - ' . $coin_name . ' received: ' . $seci_amount, 'wc-gateway-secipay' ) );
+                if ($tx_confirmations >= $confirmations && $address_amount < $seci_amount && $order_amount_received > '0'){
+                        $order->update_status( 'on-hold', __( 'Marked order as on hold - ' . $coin_name . ' received: ' . $address_amount, 'wc-gateway-secipay' ) );
+                        update_post_meta($order_id, "amount_received", $order_amount_received );
                 }
-                $result = json_decode($response, true);
+                update_post_meta($order_id, "amount_received", $order_amount_received );
+                update_post_meta($order_id, "tx_confirmations", $tx_confirmations  );
+              //$result = json_decode($response, true);
               //  write_log('TXID: ' . $seci_txid . ' Confirmation: ' . $result["confirmations"] );
                // write_log('TXID: ' . $seci_txid . ' Settings Confirmation: ' .  $confirmations );
       
